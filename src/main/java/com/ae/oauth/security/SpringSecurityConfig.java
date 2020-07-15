@@ -1,5 +1,6 @@
 package com.ae.oauth.security;
 
+import com.ae.oauth.security.event.AuthenticationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -14,18 +15,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService service;
+    private final AuthenticationHandler authenticationHandler;
 
     @Autowired
-    public SpringSecurityConfig(@Qualifier("userServiceImpl") UserDetailsService service) {
+    public SpringSecurityConfig(@Qualifier("userServiceImpl") UserDetailsService service,
+                                AuthenticationHandler authenticationHandler) {
         this.service = service;
+        this.authenticationHandler = authenticationHandler;
     }
 
     @Override
     @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(this.service)
-            .passwordEncoder(getPasswordEncoder());
-
+            .passwordEncoder(getPasswordEncoder())
+            .and()
+            .authenticationEventPublisher(authenticationHandler);
     }
 
     @Bean
